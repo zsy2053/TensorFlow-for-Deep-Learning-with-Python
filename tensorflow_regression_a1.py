@@ -44,6 +44,40 @@ my_data.sample(250).plot(kind='scatter', x='X Data', y="Y")
 plt.plot(x_data, y_hat, 'r')
 plt.show()
 
+feat_cols = [ tf.feature_column.numeric_column('x', shape=[1]) ]
+estimator = tf.estimator.LinearRegressor(feature_columns=feat_cols)
+
+from sklearn.model_selection import train_test_split
+x_train, x_eval, y_train, y_eval = train_test_split(x_data, y_true, test_size=0.3, random_state=101)
+print(x_train.shape)
+x_eval.shape
+
+input_func = tf.estimator.inputs.numpy_input_fn({'x':x_train}, y_train, batch_size=8, num_epochs=None, shuffle=True)
+train_input_func = tf.estimator.inputs.numpy_input_fn({'x':x_train}, y_train, batch_size=8, num_epochs=1000, shuffle=False)
+
+eval_input_func = tf.estimator.inputs.numpy_input_fn({'x':x_eval}, y_eval, batch_size=8, num_epochs=1000, shuffle=False)
+
+estimator.train(input_fn=input_func, steps=1000)
+
+train_metrics = estimator.evaluate(input_fn=train_input_func, steps=1000)
+
+eval_metrics = estimator.evaluate(input_fn=eval_input_func, steps=1000)
+print('TRAINING DATA METRICS')
+print(train_metrics)
+print("EVAL METRICS")
+print(eval_metrics)
+
+
+brand_new_data = np.linspace(0, 10, 10)
+input_fn_predict = tf.estimator.inputs.numpy_input_fn({'x': brand_new_data}, shuffle=False)
+estimator.predict(input_fn=input_fn_predict)
+list(estimator.predict(input_fn=input_fn_predict))
+predictions = []
+for pred in estimator.predict(input_fn=input_fn_predict):
+    predictions.append(pred['predictions'])
+predictions
+my_data.sample(n=250).plot(kind='scatter', x='X Data', y='Y')
+plt.plot(brand_new_data, predictions, 'r')
 # def sigmoid(z):
 #     return 1 / (1 + np.exp(-z))
 #
